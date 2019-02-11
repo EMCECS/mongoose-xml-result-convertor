@@ -2,6 +2,8 @@ import sys
 import os
 import csv
 import json
+import time
+import datetime
 
 if __name__ == "__main__":
     path = sys.argv[1]
@@ -18,10 +20,16 @@ if __name__ == "__main__":
     with open(path_to_metric, newline='') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=',')
         for row in reader:
-            result += " StartDate=\"" + row['DateTimeISO8601'] + "\""
-            result += " StartTimestamp=\"" + row['DateTimeISO8601'] + "\""
-            result += " EndDate=\"" + row['OpType'] + "\""
-            result += " EndTimestamp=\"" + row['OpType'] + "\""
+            dt_iso = row['DateTimeISO8601']
+            start_dt = datetime.datetime.strptime(dt_iso, '%Y-%m-%dT%H:%M:%S,%f')
+            start_timestamp = start_dt.timestamp()
+            step_dur = float(row['StepDuration[s]'])
+            end_timestamp = start_timestamp + step_dur
+            end_dt = datetime.datetime.fromtimestamp(end_timestamp)
+            result += " StartDate=\"" + str(start_dt.date()) + ' ' + str(start_dt.time()) + "\""
+            result += " StartTimestamp=\"" + str(start_timestamp) + "\""
+            result += " EndDate=\"" + str(end_dt.date()) + ' ' + str(end_dt.time()) + "\""
+            result += " EndTimestamp=\"" + str(end_timestamp) + "\""
             result += " operation=\"" + row['OpType'] + "\""
             result += " threads=\"" + str(int(row['Concurrency']) * int(row['NodeCount'])) + "\""
             result += " RequestThreads=\"" + row['Concurrency'] + "\""
@@ -47,5 +55,5 @@ if __name__ == "__main__":
             result += " duration_med=\"" + row['DurationMed[us]'] + "\""
             result += " duration_hiq=\"" + row['DurationHiQ[us]'] + "\""
             result += " duration_max=\"" + row['DurationMax[us]'] + "\""
-        result += "/></result>"
-    print(result)
+            result += "/></result>"
+            print(result)
