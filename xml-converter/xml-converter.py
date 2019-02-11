@@ -2,17 +2,18 @@ import sys
 import os
 import csv
 import json
-import datetime
+import time
+from datetime import datetime
 
 
 def build_xml(row, step_id, file_size):
     result = "<result id=\"" + step_id + "\""
     dt_iso = row['DateTimeISO8601']
-    start_dt = datetime.datetime.strptime(dt_iso, '%Y-%m-%dT%H:%M:%S,%f')
-    start_timestamp = start_dt.timestamp()
+    start_dt = datetime.strptime(dt_iso, '%Y-%m-%dT%H:%M:%S,%f')
+    start_timestamp = time.mktime(start_dt.timetuple())
     step_dur = float(row['StepDuration[s]'])
     end_timestamp = start_timestamp + step_dur
-    end_dt = datetime.datetime.fromtimestamp(end_timestamp)
+    end_dt = datetime.fromtimestamp(end_timestamp)
     result += " StartDate=\"" + str(start_dt.date()) + ' ' + str(start_dt.time()) + "\""
     result += " StartTimestamp=\"" + str(start_timestamp) + "\""
     result += " EndDate=\"" + str(end_dt.date()) + ' ' + str(end_dt.time()) + "\""
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     step_id = path.split("/")[-1]
     config = json.load(open(path_to_config))
     file_size = config["item"]["data"]["size"]
-    with open(path_to_metric, newline='') as csvfile:
+    with open(path_to_metric) as csvfile:
         reader = csv.DictReader(csvfile, delimiter=',')
         for row in reader:
-            print(build_xml(row, step_id, file_size))
+            print build_xml(row, step_id, file_size)
