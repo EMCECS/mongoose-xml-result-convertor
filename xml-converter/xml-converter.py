@@ -5,7 +5,7 @@ import json
 import datetime
 
 
-def xml_builder(row, step_id, file_size):
+def build_xml(row, step_id, file_size):
     result = "<result id=\"" + step_id + "\""
     dt_iso = row['DateTimeISO8601']
     start_dt = datetime.datetime.strptime(dt_iso, '%Y-%m-%dT%H:%M:%S,%f')
@@ -60,4 +60,4 @@ if __name__ == "__main__":
     with open(path_to_metric, newline='') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=',')
         for row in reader:
-            print(xml_builder(row, step_id, file_size))
+            print(build_xml(row, step_id, file_size))
