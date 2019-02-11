@@ -2,7 +2,6 @@ import sys
 import os
 import csv
 import json
-import time
 import datetime
 
 if __name__ == "__main__":
