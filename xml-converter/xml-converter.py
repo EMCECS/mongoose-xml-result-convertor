@@ -61,4 +61,4 @@ if __name__ == "__main__":
     with open(path_to_metric) as csvfile:
         reader = csv.DictReader(csvfile, delimiter=',')
         for row in reader:
-            print build_xml(row, step_id, file_size)
+            print(build_xml(row, step_id, file_size))
