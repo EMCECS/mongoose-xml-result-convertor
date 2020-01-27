@@ -47,6 +47,43 @@ def build_xml(row, step_id, file_size):
     return result
 
 
+def build_pravega_xml(row, step_id, file_size):
+    """
+min50latency="50.0"
+max50latency="54.0"
+avg75latency="68.5"
+avg95latency="169.0"
+avg99latency="451.5"
+min99latency="338.0"
+max99latency="565.0"
+avg999latency="969.0"
+avg9999latency="1127.0"
+    """
+
+    result = "<result id=\"" + step_id + "\""
+    result += " operation=\"" + row['OpType'] + "\""
+    result += " pods=\"" + int(row['NodeCount']) + "\""
+    result += " segment_size=\"" + segment_size + "\""
+    result += " producers=\"" + producers + "\""
+    result += " threads=\"" + str(int(row['Concurrency']) * int(row['NodeCount'])) + "\""
+    result += " RequestThreads=\"" + row['Concurrency'] + "\""
+    result += " clients=\"" + row['NodeCount'] + "\""
+    result += " filesize=\"" + file_size + "\""
+    result += " tps=\"" + row['TPAvg[op/s]'] + "\""
+    result += " tps_unit=\"" + "records/s" + "\""
+    result += " bw=\"" + row['BWAvg[MB/s]'] + "\""
+    result += " bw_unit=\"" + "MB/s" + "\""
+    result += " avglatency=\"" + row['LatencyAvg[us]'] + "\""
+    result += " latency_unit=\"" + "us" + "\""
+    result += " minavglatency=\"" + row['LatencyMin[us]'] + "\""
+    result += " latency_loq=\"" + row['LatencyLoQ[us]'] + "\""
+    result += " avg50latency=\"" + row['LatencyMed[us]'] + "\""
+    result += " latency_hiq=\"" + row['LatencyHiQ[us]'] + "\""
+    result += " maxavglatency=\"" + row['LatencyMax[us]'] + "\""
+    result += "/></result>"
+    return result
+
+
 if __name__ == "__main__":
     path = sys.argv[1]
     path_to_metric = path + "/metrics.total.csv"
@@ -58,6 +95,8 @@ if __name__ == "__main__":
     step_id = path.split("/")[-1]
     config = yaml.load(open(path_to_config, 'r'), Loader=yaml.FullLoader)
     file_size = config["item"]["data"]["size"]
+    segment_size = config["storage"]["driver"]["scaling"]["segments"]
+    producers = config["storage"]["driver"]["threads"]
     with open(path_to_metric) as csvfile:
         reader = csv.DictReader(csvfile, delimiter=',')
         for row in reader:
