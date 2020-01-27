@@ -1,8 +1,8 @@
 import sys
 import os
 import csv
-import json
 import time
+import yaml
 from datetime import datetime
 
 
@@ -50,13 +50,13 @@ def build_xml(row, step_id, file_size):
 if __name__ == "__main__":
     path = sys.argv[1]
     path_to_metric = path + "/metrics.total.csv"
-    path_to_config = path + "/config.json"
+    path_to_config = path + "/config.yaml"
     for p in [path, path_to_metric, path_to_config]:
         if not os.path.exists(p):
-            print(path_to_metric + " doesn't exist")
+            print(p + " doesn't exist")
             exit(1)
     step_id = path.split("/")[-1]
-    config = json.load(open(path_to_config))
+    config = yaml.load(open(path_to_config, 'r'), Loader=yaml.FullLoader)
     file_size = config["item"]["data"]["size"]
     with open(path_to_metric) as csvfile:
         reader = csv.DictReader(csvfile, delimiter=',')
