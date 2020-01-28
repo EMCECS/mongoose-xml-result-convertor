@@ -1,16 +1,12 @@
 # !/usr/bin/env python3
-import sys
-import os
-import csv
+
+import csv, yaml
 import time
-import yaml
+import os, argparse
 from datetime import datetime
 
-import os, sys, argparse
-import traceback, datetime
 
-
-def set_and_get_options() -> argparse.Namespace:
+def set_and_get_options():
     parser = argparse.ArgumentParser(description='Automation test steps.')
     parser.add_argument('-p', '--pravega', action="store_true", help='generate pravega specific report')
     parser.add_argument('-l', '--logpath', action='store', help="path to mongoose log", required=True)
@@ -72,9 +68,14 @@ def build_pravega_xml(row, step_id, config):
     avg999latency=?
     avg9999latency=?
     """
-    file_size = config["item"]["data"]["size"]
-    segment_size = config["storage"]["driver"]["scaling"]["segments"]
-    producers = config["storage"]["driver"]["threads"]
+    try:
+        file_size = config["item"]["data"]["size"]
+        segment_size = config["storage"]["driver"]["scaling"]["segments"]
+        producers = config["storage"]["driver"]["threads"]
+    except KeyError as e:
+        print(f"config.yaml for {step_id} is not pravega-driver specific. Don't use the key '-p'")
+        print(f"KeyError: {e}")
+        exit(1)
 
     result = "<result id=\"" + step_id + "\""
     result += " operation=\"" + row['OpType'] + "\""
@@ -118,19 +119,19 @@ if __name__ == "__main__":
     args = set_and_get_options()
     logpath = args.logpath
     step_ids = get_step_ids(logpath)
+    result = "<result>\n"
 
     for step_id in step_ids:
         path_to_metric = f"{logpath}/{step_id}/metrics.total.csv"
         path_to_config = f"{logpath}/{step_id}/config.yaml"
         config = yaml.load(open(path_to_config, 'r'), Loader=yaml.FullLoader)
 
-        result = "<result>\n"
-
         with open(path_to_metric) as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
             for row in reader:
                 if args.pravega:
-                    result += build_pravega_xml(row, step_id, config)
+                    result += build_pravega_xml(row, step_id, config) + "\n"
                 else:
-                    result += build_xml(row, step_id, config)
-        result += "\n</result>"
+                    result += build_xml(row, step_id, config) + "\n"
+    result += "</result>"
+    print(result)
