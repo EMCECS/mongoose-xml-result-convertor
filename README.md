@@ -3,6 +3,7 @@ The script allows to convert the mongoose logs to the xml format.
 
 ### Environemnt
 * Python 3
+* Python 2 (use `xml-comvertor_py2.py`)
 
 ### Usage
 

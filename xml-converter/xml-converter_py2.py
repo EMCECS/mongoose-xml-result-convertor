@@ -65,7 +65,7 @@ def build_pravega_xml(row, step_id, config):
         dt_iso = row['DateTimeISO8601']
     except KeyError as e:
         print "config.yaml for " + step_id + " is not pravega-driver specific. Don't use the key '-p'"
-        print "KeyError: " + e
+        print "KeyError: " + e.args
         exit(1)
 
     start_dt = datetime.strptime(dt_iso, '%Y-%m-%dT%H:%M:%S,%f')
