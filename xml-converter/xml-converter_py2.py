@@ -37,7 +37,7 @@ def build_xml(row, step_id, config):
     result += " filesize=\"" + file_size + "\""
     result += " tps=\"" + str(round(float(row['TPAvg[op/s]']), 2)) + "\""
     result += " tps_unit=\"" + "op/s" + "\""
-    result += " bw=\"" + str(round(float(row['BWAvg[MB/s]']) / 1000000, 2)) + "\""
+    result += " bw=\"" + str(round(float(row['BWAvg[MB/s]']), 2)) + "\""
     result += " bw_unit=\"" + "MB/s" + "\""
     result += " latency=\"" + str(round(float(row['LatencyAvg[us]']), 2)) + "\""
     result += " latency_unit=\"" + "us" + "\""
