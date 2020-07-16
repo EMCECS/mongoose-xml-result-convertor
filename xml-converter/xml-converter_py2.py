@@ -117,7 +117,7 @@ if __name__ == "__main__":
     for step_id in step_ids:
         path_to_metric = logpath + "/" + step_id + "/" + "metrics.total.csv"
         path_to_config = logpath + "/" + step_id + "/" + "config.yaml"
-        config = yaml.load(open(path_to_config, 'r'), Loader=yaml.FullLoader)
+        config = yaml.load(open(path_to_config, 'r'))
 
         with open(path_to_metric) as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
