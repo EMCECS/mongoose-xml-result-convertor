@@ -94,7 +94,7 @@ def build_pravega_xml(row, step_id, config):
 
 def check_log_dir(path):
     if os.path.isdir(path):
-        if path.startswith("none-"):
+        if path.split("/")[-1].startswith("none-"):
             return False
         if not os.path.exists(path + "/metrics.total.csv"):
             return False
