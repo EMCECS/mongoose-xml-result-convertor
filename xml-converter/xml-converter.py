@@ -2,6 +2,7 @@
 
 import csv, yaml
 import time
+import re
 import os, argparse
 from datetime import datetime
 
