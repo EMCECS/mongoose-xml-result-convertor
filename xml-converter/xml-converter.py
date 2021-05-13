@@ -2,6 +2,7 @@
 
 import csv, yaml
 import time
+import re
 import os, argparse
 from datetime import datetime
 
@@ -40,16 +41,24 @@ def build_xml(row, step_id, config):
     result += " latency=\"" + str(round(float(row['LatencyAvg[us]']),2)) + "\""
     result += " latency_unit=\"" + "us" + "\""
     result += " latency_min=\"" + row['LatencyMin[us]'] + "\""
-    result += " latency_loq=\"" + row['LatencyLoQ[us]'] + "\""
-    result += " latency_med=\"" + row['LatencyMed[us]'] + "\""
-    result += " latency_hiq=\"" + row['LatencyHiQ[us]'] + "\""
+
+    regex = re.compile('LatencyQ_\d.\d{,7}')
+    latencyQuantiles = filter(regex.match, row.keys())  #find all latency quantiles entries in metrics.total
+    for latencyQuantile in latencyQuantiles:
+        #latencyQuantile[9:-4] - in string LatencyQ_0.5[us] we delete everything but the number
+        result += " latency_" + latencyQuantile[9:-4] + "=\"" + row[latencyQuantile] + "\""
+
     result += " latency_max=\"" + row['LatencyMax[us]'] + "\""
     result += " duration=\"" + str(round(float(row['DurationAvg[us]']),2)) + "\""
     result += " duration_unit=\"" + "us" + "\""
     result += " duration_min=\"" + row['DurationMin[us]'] + "\""
-    result += " duration_loq=\"" + row['DurationLoQ[us]'] + "\""
-    result += " duration_med=\"" + row['DurationMed[us]'] + "\""
-    result += " duration_hiq=\"" + row['DurationHiQ[us]'] + "\""
+
+    regex = re.compile('DurationQ_\d.\d{,7}')
+    durationQuantiles = filter(regex.match, row.keys())
+    for durationQuantile in durationQuantiles:
+        #durationQuantile[10:-4] - in string DurationQ_0.5[us] we delete everything but the number
+        result += " duration_" + durationQuantile[10:-4] + "=\"" + row[durationQuantile] + "\""
+
     result += " duration_max=\"" + row['DurationMax[us]'] + "\""
     result += "/>"
     return [ start_dt , result + "\n"]
