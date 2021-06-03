@@ -11,10 +11,11 @@ def set_and_get_options():
     parser = argparse.ArgumentParser(description='Automation test steps.')
     parser.add_argument('-p', '--pravega', action="store_true", help='generate pravega specific report')
     parser.add_argument('-l', '--logpath', action='store', help="path to mongoose log", required=True)
+    parser.add_argument('--disable-quantiles', action="store_true", help="when disabled lat/dur quantiles are not printed in xml")
     return parser.parse_args()
 
 
-def build_xml(row, step_id, config):
+def build_xml(row, step_id, config, disable_quantiles):
     file_size = config["item"]["data"]["size"]
     result = "<result id=\"" + step_id + "\""
     dt_iso = row['DateTimeISO8601']
@@ -41,23 +42,24 @@ def build_xml(row, step_id, config):
     result += " latency=\"" + str(round(float(row['LatencyAvg[us]']),4)) + "\""
     result += " latency_unit=\"" + "us" + "\""
     result += " latency_min=\"" + row['LatencyMin[us]'] + "\""
-
-    regex = re.compile('LatencyQ_\d.\d{,7}')
-    latencyQuantiles = filter(regex.match, row.keys())  #find all latency quantiles entries in metrics.total
-    for latencyQuantile in latencyQuantiles:
-        #latencyQuantile[9:-4] - in string LatencyQ_0.5[us] we delete everything but the number
-        result += " latency_" + latencyQuantile[9:-4] + "=\"" + row[latencyQuantile] + "\""
+    if not disable_quantiles:
+        regex = re.compile('LatencyQ_\d.\d{,7}')
+        latencyQuantiles = filter(regex.match, row.keys())  #find all latency quantiles entries in metrics.total
+        for latencyQuantile in latencyQuantiles:
+            #latencyQuantile[9:-4] - in string LatencyQ_0.5[us] we delete everything but the number
+            result += " latency_" + latencyQuantile[9:-4] + "=\"" + row[latencyQuantile] + "\""
 
     result += " latency_max=\"" + row['LatencyMax[us]'] + "\""
     result += " duration=\"" + str(round(float(row['DurationAvg[us]']),2)) + "\""
     result += " duration_unit=\"" + "us" + "\""
     result += " duration_min=\"" + row['DurationMin[us]'] + "\""
 
-    regex = re.compile('DurationQ_\d.\d{,7}')
-    durationQuantiles = filter(regex.match, row.keys())
-    for durationQuantile in durationQuantiles:
-        #durationQuantile[10:-4] - in string DurationQ_0.5[us] we delete everything but the number
-        result += " duration_" + durationQuantile[10:-4] + "=\"" + row[durationQuantile] + "\""
+    if not disable_quantiles:
+        regex = re.compile('DurationQ_\d.\d{,7}')
+        durationQuantiles = filter(regex.match, row.keys())
+        for durationQuantile in durationQuantiles:
+            #durationQuantile[10:-4] - in string DurationQ_0.5[us] we delete everything but the number
+            result += " duration_" + durationQuantile[10:-4] + "=\"" + row[durationQuantile] + "\""
 
     result += " duration_max=\"" + row['DurationMax[us]'] + "\""
     result += "/>"
@@ -91,9 +93,9 @@ def build_pravega_xml(row, step_id, config):
     result += " latency_unit=\"" + "us" + "\""
     result += " avglatency=\"" + row['LatencyAvg[us]'] + "\""
     result += " minavglatency=\"" + row['LatencyMin[us]'] + "\""
-    result += " avg75latency=\"" + row['LatencyLoQ[us]'] + "\""
-    result += " avg50latency=\"" + row['LatencyMed[us]'] + "\""
-    result += " avg95latency=\"" + row['LatencyHiQ[us]'] + "\""
+    #result += " avg75latency=\"" + row['LatencyLoQ[us]'] + "\""
+    #result += " avg50latency=\"" + row['LatencyMed[us]'] + "\""
+    #result += " avg95latency=\"" + row['LatencyHiQ[us]'] + "\""
     result += " maxavglatency=\"" + row['LatencyMax[us]'] + "\""
     result += "/>"
     return [ start_dt , result + "\n"]
@@ -118,6 +120,7 @@ def get_step_ids(logpath):
 if __name__ == "__main__":
     args = set_and_get_options()
     logpath = args.logpath
+    disable_quantiles = args.disable_quantiles
     step_ids = get_step_ids(logpath)
     result_dict = {}
 
@@ -132,7 +135,7 @@ if __name__ == "__main__":
                 if args.pravega:
                     result = build_pravega_xml(row, step_id, config)
                 else:
-                    result = build_xml(row, step_id, config)
+                    result = build_xml(row, step_id, config, disable_quantiles)
                 result_dict[result[0]] = result[1]
     sorted_list = [v for k, v in sorted(result_dict.items(), key=lambda p: p[0], reverse=False)]
     new_result = "<result>"
